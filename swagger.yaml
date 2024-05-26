@@ -59,20 +59,33 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /events/[id]:
-    get:
+  /events/[id]/register:
+    post:
       tags:
         - Events
-      summary: Get details about the specified event ID
+      summary: Register a driver to the specified event ID
+      requestBody:
+        required: true
+        description: Register a driver ID along with their vehicle ID to the event
+        content:
+          application/json:
+            schema:
+              required:
+                - driver_id
+                - vehicle_id
+              properties:
+                driver_id:
+                  $ref: "#/components/schemas/NanoID"
+                vehicle_id:
+                  allOf:
+                    - $ref: "#/components/schemas/NanoID"
+                  example: QkIZp32v_uq9
+
       responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DetailedEvent"
+        201:
+          description: Driver registered
         400:
-          description: Invalid Request
+          description: Driver already registered
           content:
             application/json:
               schema:
@@ -83,6 +96,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+
+  # /events/[id]:
+  #   get:
+  #     tags:
+  #       - Events
+  #     summary: Get details about the specified event ID
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/DetailedEvent"
+  #       400:
+  #         description: Invalid Request
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/Error"
+  #       500:
+  #         description: Error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/Error"
 
 components:
   securitySchemes:
