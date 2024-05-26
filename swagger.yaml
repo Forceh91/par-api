@@ -11,6 +11,8 @@ tags:
     description: Everything about the drivers
   - name: Events
     description: Everything about the events
+  - name: Vehicles
+    description: Everything about the vehicles
 
 paths:
   /drivers:
@@ -39,6 +41,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Driver"
+
+  /vehicles:
+    post:
+      tags:
+        - Vehicles
+      summary: Create a new vehicle on PAR
+      requestBody:
+        required: true
+        description: Use the vehicle name to register it in the system
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewVehicle"
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+          description: Vehicle already existed in the system
+
+        201:
+          description: Vehicle has been created in the system
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
 
   /events:
     get:
@@ -150,6 +179,7 @@ components:
           maxLength: 2
           description: |-
             [Alpha-2 Country Code](https://www.iban.com/country-codes)
+
     NewDriver:
       type: object
       required:
@@ -202,7 +232,10 @@ components:
         has_itinerary:
           type: boolean
           example: true
-          description: Indicates that a list of stages/sessions are present in the system for this event
+          description: Indicates that a list of stages/sessions are present in the system for this event\
+        game:
+          type: string
+          example: Dirt Rally 2.0
 
     DetailedEvent:
       type: object
@@ -250,6 +283,29 @@ components:
           items:
             type: object
           description: A list of retirements from the events overall/aggregated results
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          example: L80Amo4J8MKs
+          minLength: 12
+          maxLength: 12
+          description: |-
+            [NanoID](https://github.com/ai/nanoid?tab=readme-ov-file#nano-id)
+        name:
+          type: string
+          example: Lancia Fulvia HF
+
+    NewVehicle:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Lancia Fulvia HF
 
     DateTime:
       type: string
