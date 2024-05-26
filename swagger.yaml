@@ -2,12 +2,15 @@ openapi: "3.0.2"
 info:
   title: Project Apollo Rally API
   version: "1.0"
+  description: Working draft of the central server API that will be used to automate Project Apollo Rally tracking
 servers:
   - url: https://paracing.vercel.app/api/v1/par/
 
 tags:
   - name: Drivers
     description: Everything about the drivers
+  - name: Events
+    description: Everything about the events
 
 paths:
   /drivers:
@@ -36,6 +39,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Driver"
+
+  /events:
+    get:
+      tags:
+        - Events
+      summary: Get a list of all active events (rallys)
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Events"
+        500:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /events/[id]:
+    get:
+      tags:
+        - Events
+      summary: Get details about the specified event ID
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailedEvent"
+        400:
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   securitySchemes:
@@ -86,3 +133,102 @@ components:
           maxLength: 2
           description: |-
             [Alpha-2 Country Code](https://www.iban.com/country-codes)
+
+    Events:
+      type: object
+      properties:
+        events:
+          description: All active events
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+
+    Event:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/NanoID"
+        name:
+          type: string
+          example: Rally Argentina
+        start_date:
+          $ref: "#/components/schemas/DateTime"
+        end_date:
+          allOf:
+            - $ref: "#/components/schemas/DateTime"
+          example: "2023-12-11T23:59:59.999Z"
+        session_count:
+          type: number
+          example: 12
+          description: The number of sessions (or stages) in the event
+        has_itinerary:
+          type: boolean
+          example: true
+          description: Indicates that a list of stages/sessions are present in the system for this event
+
+    DetailedEvent:
+      type: object
+      properties:
+        id:
+          allOf:
+            - $ref: "#/components/schemas/NanoID"
+          description: The unique ID of the event
+        name:
+          type: string
+          example: Rally Argentina
+
+        start_date:
+          $ref: "#/components/schemas/DateTime"
+
+        end_date:
+          allOf:
+            - $ref: "#/components/schemas/DateTime"
+          example: "2023-12-11T23:59:59.999Z"
+
+        last_result_id:
+          allOf:
+            - $ref: "#/components/schemas/NanoID"
+          description: The unique ID of the last result (stage) that was completed
+
+        last_event_result_number:
+          type: number
+          description: The chronological order number of the last result (stage) that was completed
+          example: 12
+
+        itinerary:
+          type: array
+          items:
+            type: object
+          description: A list of each session within the event
+
+        aggregated_results:
+          type: array
+          items:
+            type: object
+          description: The events current overall/aggregated results
+
+        retirements:
+          type: array
+          items:
+            type: object
+          description: A list of retirements from the events overall/aggregated results
+
+    DateTime:
+      type: string
+      example: "2023-12-04T12:00:00.000Z"
+      description: |-
+        All dates in the system will be presented in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format
+
+    NanoID:
+      type: string
+      example: ulreHJqjQ2b_
+      description: |-
+        Unique ID ([NanoID](https://github.com/ai/nanoid?tab=readme-ov-file#nano-id)) used to reference an object
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
