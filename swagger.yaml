@@ -126,6 +126,101 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /events/[id]/stages/[stage_id]/times:
+    post:
+      tags:
+        - Events
+      summary: Submit a time to a stage
+      requestBody:
+        required: true
+        description: Submit a time or a retirement to a stage
+        content:
+          application/json:
+            schema:
+              required:
+                - driver_id
+                - time
+              properties:
+                driver_id:
+                  $ref: "#/components/schemas/NanoID"
+                time:
+                  type: number
+                  description: The time it took to complete the stage in milliseconds, disregarded if retired is true
+                retired:
+                  type: boolean
+                  description: Whether the driver retired on this stage or not
+                  default: false
+
+      responses:
+        201:
+          description: Time submitted
+          content:
+            application/json:
+              schema:
+                properties:
+                  stage_time:
+                    type: number
+                  total_time:
+                    type: number
+                    description: All of the drivers times combined (including this one) in milliseconds
+                  retired:
+                    type: boolean
+                    example: false
+                  completed_stages:
+                    type: number
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /events/[id]/stages/[stage_id]/penalties:
+    post:
+      tags:
+        - Events
+      summary: Submit a penalty to a stage
+      requestBody:
+        required: true
+        description: Submit a penalty to a stage
+        content:
+          application/json:
+            schema:
+              required:
+                - driver_id
+                - penalty
+              properties:
+                driver_id:
+                  $ref: "#/components/schemas/NanoID"
+                penalty:
+                  $ref: "#/components/schemas/Penalty"
+
+      responses:
+        201:
+          description: Penalty submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Penalty"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   # /events/[id]:
   #   get:
   #     tags:
@@ -306,6 +401,27 @@ components:
         name:
           type: string
           example: Lancia Fulvia HF
+
+    Penalty:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          $ref: "#/components/schemas/PenaltyReason"
+        message:
+          type: string
+          description: The penalty message to display if the reason is CUSTOM, ignored otherwise
+        length:
+          type: number
+          description: The penalty time (in milliseconds) to apply if the reason is CUSTOM, ignored otherwise
+
+    PenaltyReason:
+      type: string
+      enum:
+        - JUMP_START
+        - MISSED_STAGE
+        - CUSTOM
 
     DateTime:
       type: string
